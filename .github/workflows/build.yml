@@ -102,7 +102,7 @@ jobs:
         scripts/build-macos-amd64.sh
     - uses: actions/upload-artifact@v4
       with:
-        path: out/
+        path: install/
 
   build-dedicated-macos-amd64:
     runs-on: macos-latest
