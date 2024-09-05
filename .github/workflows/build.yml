@@ -92,8 +92,8 @@ jobs:
       run: |
         scripts/build-ubuntu-amd64.sh -d
 
-  build-macos-amd64:
-    runs-on: macos-latest
+  build-macos-arm64:
+    runs-on: macos-14
 
     steps:
     - uses: actions/checkout@v2
