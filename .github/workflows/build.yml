@@ -97,6 +97,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - uses: upload-artifact@v4
     - name: Build macos-amd64
       run: |
         scripts/build-macos-amd64.sh
