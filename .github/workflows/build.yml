@@ -99,7 +99,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/upload-artifact@v4
     - with:
-        path: build
+        path: out/
     - name: Build macos-amd64
       run: |
         scripts/build-macos-amd64.sh
