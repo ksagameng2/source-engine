@@ -159,6 +159,7 @@ public:
 	}
 
 	virtual void StartTextInput() = 0;
+	virtual void EndTextInput() = 0;
 };
 
 

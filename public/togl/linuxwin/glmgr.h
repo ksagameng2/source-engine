@@ -1794,7 +1794,7 @@ class GLMContext
 		CGLMProgram						*m_preload3DTexFragmentProgram;
 		CGLMProgram						*m_preloadCubeTexFragmentProgram;
 
-#if defined( APPLE ) && defined( GLMDEBUG )
+#if defined( OSX ) && defined( GLMDEBUG )
 		CGLMProgram						*m_boundProgram[ kGLMNumProgramTypes ];
 #endif
 

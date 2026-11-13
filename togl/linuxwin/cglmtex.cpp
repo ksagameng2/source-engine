@@ -1772,7 +1772,7 @@ void CGLMTex::Unlock( GLMTexLockParams *params )
 	}
 }
 
-#if defined( APPLE )
+#if defined( OSX )
 
 void CGLMTex::HandleSRGBMismatch( bool srgb, int &srgbFlipCount )
 {

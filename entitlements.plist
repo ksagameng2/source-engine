@@ -7,6 +7,8 @@
 	<key>com.apple.developer.team-identifier</key>
 	<string>AAAAAAAAA</string>
 	<key>get-task-allow</key>
-	<false/>
+	<true/>
+	<key>com.apple.developer.kernel.increased-memory-limit</key>
+	<true/>
 </dict>
 </plist>

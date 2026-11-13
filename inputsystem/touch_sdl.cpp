@@ -8,8 +8,8 @@
 #include "inputsystem.h"
 #include "tier1/convar.h"
 #include "tier0/icommandline.h"
-#include "SDL.h"
-#include "SDL_touch.h"
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_touch.h>
 // NOTE: This has to be the last file included!
 #include "tier0/memdbgon.h"
 

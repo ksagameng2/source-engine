@@ -68,8 +68,8 @@
 #endif
 
 #if defined( USE_SDL )
-#include <SDL.h>
-#include <SDL_version.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_version.h>
 
 #if !defined( _WIN32 )
 #define MB_OK 			0x00000001
@@ -256,7 +256,7 @@ bool GetExecutableName( char *out, int outSize )
 //-----------------------------------------------------------------------------
 char *GetBaseDirectory( void )
 {
-#ifdef ANDROID
+#if ANDROID || IOS
 	return getenv("VALVE_GAME_PATH");
 #else
 	return g_szBasedir;
@@ -1235,7 +1235,7 @@ DLL_EXPORT int LauncherMain( int argc, char **argv )
 
 #if (defined LINUX || defined PLATFORM_BSD) && defined USE_SDL && defined TOGLES && !defined ANDROID
 	SDL_SetHint(SDL_HINT_VIDEO_X11_FORCE_EGL, "1");
-#elif IOS
+#elif defined IOS || defined ANDROID
 	SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "0");
 #endif
 

@@ -442,8 +442,9 @@ struct GLMTexSamplingParams
 			flBorderColor[1] = ((m_borderColor >>  8) & 0xFF) * (1.0f/255.0f);	//G
 			flBorderColor[2] = ((m_borderColor      ) & 0xFF) * (1.0f/255.0f);	//B
 			flBorderColor[3] = ((m_borderColor >> 24) & 0xFF) * (1.0f/255.0f);	//A
+			gGL->glTexParameterfv( target, GL_TEXTURE_BORDER_COLOR, flBorderColor ); // <-- this crashes ATI's driver, remark it out
+
 		}
-		gGL->glTexParameterfv( target, GL_TEXTURE_BORDER_COLOR, flBorderColor ); // <-- this crashes ATI's driver, remark it out
 		gGL->glTexParameteri( target, GL_TEXTURE_MIN_LOD, m_packed.m_minLOD );
 //		gGL->glTexParameterfv( target, GL_TEXTURE_LOD_BIAS, &m_lodBias );
 		gGL->glTexParameteri( target, GL_TEXTURE_COMPARE_MODE_ARB, m_packed.m_compareMode ? GL_COMPARE_R_TO_TEXTURE_ARB : GL_NONE );
@@ -492,7 +493,7 @@ protected:
 		// last param lets us send NULL data ptr (only legal with uncompressed formats, beware)
 		// this helps out ResetSRGB.
 
-#if defined( APPLE )
+#if defined( OSX ) || defined ( ANGLE )
 	void					HandleSRGBMismatch( bool srgb, int &srgbFlipCount );
 	void					ResetSRGB( bool srgb, bool noDataWrite );
 	// re-specify texture format to match desired sRGB form

@@ -3332,8 +3332,13 @@ void convert_texture( GLenum &internalformat, GLsizei width, GLsizei height, GLe
 	if( format == GL_BGRA ) format = GL_RGBA;
 	if( format == GL_BGR ) format = GL_RGB;
 
-	if( internalformat == GL_SRGB8 && format == GL_RGBA )
-		internalformat = GL_SRGB8_ALPHA8;
+	if( format == GL_RGBA )
+	{
+		if( internalformat == GL_SRGB8 )
+			internalformat = GL_SRGB8_ALPHA8;
+		else if( internalformat == GL_RGB8 )
+			internalformat = GL_RGBA8;
+	}
 
 	if( format == GL_LUMINANCE || format == GL_LUMINANCE_ALPHA )
 		internalformat = format;
@@ -4088,7 +4093,7 @@ void CGLMTex::Unlock( GLMTexLockParams *params )
 	}
 }
 
-#if defined( APPLE )
+#if defined( OSX ) || defined ( ANGLE )
 
 void CGLMTex::HandleSRGBMismatch( bool srgb, int &srgbFlipCount )
 {

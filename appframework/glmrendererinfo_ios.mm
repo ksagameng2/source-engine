@@ -8,6 +8,7 @@
 //=============================================================================//
 
 #include "GL/gl.h"
+#include <SDL2/SDL_video.h>
 
 #undef MIN
 #undef MAX
@@ -27,149 +28,93 @@ GLMRendererInfo::GLMRendererInfo( GLMRendererInfoFields *info )
 {
 
 	// absorb info obtained so far by caller
-	m_info = *info;
-	m_displays = NULL;
-		
-	// run queries.
-	char *gl_ext_string = (char*)gGL->glGetString(GL_EXTENSIONS);
+        m_info = *info;
+        m_displays = NULL;
+        
+        m_info.m_ati = false;
+        m_info.m_atiNewer = false;
 
-	uint vers = m_info.m_osComboVersion;
-	// avoid crashing due to strstr'ing NULL pointer returned from glGetString
-	if (!gl_ext_string)
-	  gl_ext_string = "";
+        m_info.m_hasGammaWrites = true;
+		m_info.m_cantAttachSRGB = false;
 
-	
-	//-------------------------------------------------------------------
-	// booleans
-	//-------------------------------------------------------------------
-	// gamma writes.
-	m_info.m_hasGammaWrites = true;
-	
-	
-	// extension string *could* be checked, but on 10.6.3 the ext string is not there, but the func *is*
+        // If you haven't created a GL context by now (and initialized gGL), you're about to crash.
 
-	//-------------------------------------------------------------------
-	// mixed attach sizes for FBO
-	m_info.m_hasMixedAttachmentSizes = true;
-		if (!strstr(gl_ext_string, "GL_ARB_framebuffer_object"))
-		{
-			// ARB_framebuffer_object not available
-			m_info.m_hasMixedAttachmentSizes = false;
-		}
-	// also check ext string
+        m_info.m_hasMixedAttachmentSizes = true;
+		#if !TOMT
+        m_info.m_hasBGRA = gGL->m_bHave_GL_EXT_vertex_array_bgra;
+		#endif
 
-	//-------------------------------------------------------------------
-	// BGRA vert attribs
-	m_info.m_hasBGRA = true;
-	if (!strstr(gl_ext_string, "EXT_vertex_array_bgra"))
-	{
-		// EXT_vertex_array_bgra not available
-		m_info.m_hasBGRA = false;
-	}
+        // !!! FIXME: what do these do on the Mac?
+        m_info.m_hasNewFullscreenMode = false;
+        m_info.m_hasNativeClipVertexMode = true;
 
-	//-------------------------------------------------------------------
-	m_info.m_hasNewFullscreenMode = true;
-	//-------------------------------------------------------------------
-	m_info.m_hasNativeClipVertexMode = false; //seems to cause some bugs with reflections when enabled?
+        // if user disabled them
+        if (CommandLine()->FindParm("-glmdisableclipplanes"))
+        {
+                m_info.m_hasNativeClipVertexMode = false;
+        }
+        
+        // or maybe enabled them..
+        if (CommandLine()->FindParm("-glmenableclipplanes"))
+        {
+                m_info.m_hasNativeClipVertexMode = true;
+        }
+        
+#if TOGLES || TOMT
+        m_info.m_hasOcclusionQuery = true;
+        m_info.m_hasFramebufferBlit = true;
+        m_info.m_hasUniformBuffers = true;
+#else
+        m_info.m_hasOcclusionQuery = gGL->m_bHave_GL_ARB_occlusion_query;
+        m_info.m_hasFramebufferBlit = gGL->m_bHave_GL_EXT_framebuffer_blit || gGL->m_bHave_GL_ARB_framebuffer_object;
+        m_info.m_hasUniformBuffers =  gGL->m_bHave_GL_ARB_uniform_buffer;
+#endif
 
-	// if user disabled them
-	if (CommandLine()->FindParm("-glmdisableclipplanes"))
-	{
-		m_info.m_hasNativeClipVertexMode = false;
-	}
-	
-	// or maybe enabled them..
-	if (CommandLine()->FindParm("-glmenableclipplanes"))
-	{
-		m_info.m_hasNativeClipVertexMode = true;
-	}
-	
-	//-------------------------------------------------------------------
-	m_info.m_hasOcclusionQuery = true;
-	if (!strstr(gl_ext_string, "ARB_occlusion_query"))
-	{
-		m_info.m_hasOcclusionQuery = false;		// you don't got it!
-	}
-	
-	//-------------------------------------------------------------------
-	m_info.m_hasFramebufferBlit = true;
-	if (!strstr(gl_ext_string, "EXT_framebuffer_blit"))
-	{
-		m_info.m_hasFramebufferBlit = false;	// you know you don't got it!
-	}
-	
-	//-------------------------------------------------------------------
-	m_info.m_maxAniso = 16;			//FIXME needs real query
-	
-	//-------------------------------------------------------------------
-	m_info.m_hasBindableUniforms = true;
-	if (!strstr(gl_ext_string, "EXT_bindable_uniform"))
-	{
-		m_info.m_hasBindableUniforms = false;
-	}
-	m_info.m_hasBindableUniforms = false;		// hardwiring this path to false until we see how to accelerate it properly
-	
-	//-------------------------------------------------------------------
-	m_info.m_hasUniformBuffers = true;
-	if (!strstr(gl_ext_string, "ARB_uniform_buffer"))
-	{
-		m_info.m_hasUniformBuffers = false;
-	}
+        GLint nMaxAniso = 0;
+        gGL->glGetIntegerv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &nMaxAniso );
+        m_info.m_maxAniso = clamp<int>( nMaxAniso, 0, 16 );
+        
+        // We don't currently used bindable uniforms, but I've been experimenting with them so I might as well check this in just in case they turn out to be useful.
+        m_info.m_hasBindableUniforms = false;           // !!! FIXME hardwiring this path to false until we see how to accelerate it properly
+        m_info.m_maxVertexBindableUniforms = 0;
+        m_info.m_maxFragmentBindableUniforms = 0;
+        m_info.m_maxBindableUniformSize = 0;
+        
 
-	//-------------------------------------------------------------------
-	// test for performance pack (10.6.4+)
+        m_info.m_hasPerfPackage1 = true;  // this flag is Mac-specific. We do slower things if you don't have Mac OS X 10.x.y or later. Linux always does the fast path!
 
-	bool perfPackageDetected = true;
-	
-	if (perfPackageDetected)
-	{
-		m_info.m_hasPerfPackage1 = true;
-	}	
+        //-------------------------------------------------------------------
+        // runtime options that aren't negotiable once set
 
-	if (CommandLine()->FindParm("-glmenableperfpackage"))	// force it on
-	{
-		m_info.m_hasPerfPackage1 = true;
-	}
-	
-	if (CommandLine()->FindParm("-glmdisableperfpackage"))	// force it off
-	{
-		m_info.m_hasPerfPackage1 = false;
-	}
+        m_info.m_hasDualShaders = CommandLine()->FindParm("-glmdualshaders") != 0;
 
+        //-------------------------------------------------------------------
+        // "can'ts "
 
-	//-------------------------------------------------------------------
-	// runtime options that aren't negotiable once set
+        m_info.m_cantBlitReliably = false;
+                
+        if (CommandLine()->FindParm("-glmenabletrustblit"))
+        {
+                m_info.m_cantBlitReliably = false;                      // we trust the blit, so set the cant-blit cap to false
+        }
+        if (CommandLine()->FindParm("-glmdisabletrustblit"))
+        {
+                m_info.m_cantBlitReliably = true;                       // we do not trust the blit, so set the cant-blit cap to true
+        }
 
-	m_info.m_hasDualShaders = CommandLine()->FindParm("-glmdualshaders");
+        // MSAA resolve issues
+        m_info.m_cantResolveFlipped     = false;
+        
 
-	//-------------------------------------------------------------------
-	// "can'ts "
-	
-	m_info.m_cantBlitReliably = false;		//don't trust FBO blit on Intel before 10.6.6
-	if (CommandLine()->FindParm("-glmenabletrustblit"))
-	{
-		m_info.m_cantBlitReliably = false;			// we trust the blit, so set the cant-blit cap to false
-	}
-	if (CommandLine()->FindParm("-glmdisabletrustblit"))
-	{
-		m_info.m_cantBlitReliably = true;			// we do not trust the blit, so set the cant-blit cap to true
-	}
-
-	m_info.m_cantAttachSRGB = false;	// across the board on 10.5.x actually..
-
-	// MSAA resolve issues
-	m_info.m_cantResolveFlipped	= false;	// initial stance
-	
-
-	m_info.m_cantResolveScaled = false;
-	
-	// gamma decode impacting shader codegen
-	m_info.m_costlyGammaFlips = false;
-
-	// The OpenGL driver for Intel HD4000 on 10.8 has a bug in the GLSL compiler, which was fixed
-	// in 10.9 (and unlikely to be fixed in 10.8). See intelglmallocworkaround.h for more info.
-	m_info.m_badDriver108Intel = false;
-
+        m_info.m_cantResolveScaled = false;
+                
+        if ( gGL->m_bHave_GL_EXT_framebuffer_multisample_blit_scaled )
+        {
+                m_info.m_cantResolveScaled = false;
+        }
+        
+        // gamma decode impacting shader codegen
+        m_info.m_costlyGammaFlips = false;
 }
 
 GLMRendererInfo::~GLMRendererInfo( void )
@@ -546,27 +491,12 @@ bool	GLMDisplayDB::GetModeInfo( int rendererIndex, int displayIndex, int modeInd
         GLMDisplayMode *displayModeInfo = (*(*(*m_renderers)[rendererIndex]->m_displays)[displayIndex]->m_modes)[modeIndex];
         *infoOut = displayModeInfo->m_info;
         return false;
-    } else
+    } else 
 	{
-        SDL_DisplayMode mode;
-        if (SDL_GetCurrentDisplayMode(displayIndex, &mode) == 0) {
-            infoOut->m_modePixelWidth = mode.w;
-            infoOut->m_modePixelHeight = mode.h;
-            infoOut->m_modeRefreshHz = mode.refresh_rate > 0 ? mode.refresh_rate : 60;
-            
-            GLMDisplayInfo *dispinfo = (*(*m_renderers)[rendererIndex]->m_displays)[displayIndex];
-            FOR_EACH_VEC((*dispinfo->m_modes), i) {
-                GLMDisplayMode *m = (*dispinfo->m_modes)[i];
-                if (m->m_info.m_modePixelWidth == mode.w && m->m_info.m_modePixelHeight == mode.h) 
-				{
-                    *infoOut = m->m_info;
-                    return false;
-                }
-            }
-            return false;
-        }
-        return true;
-    }
+	    GLMDisplayMode *displayModeInfo = (*(*(*m_renderers)[rendererIndex]->m_displays)[displayIndex]->m_modes)[0];
+        *infoOut = displayModeInfo->m_info;
+        return false;
+	}
 }
 
 
@@ -673,19 +603,19 @@ void GLMDisplayInfo::PopulateModes( void )
     SDL_GetWindowSizeInPixels(SDL_GetWindowFromID(1), &rw, &rh);
 	SDL_GetCurrentDisplayMode(0, &mode);
 	//SDL_GetWindowSize(SDL_GetWindowFromID(1), &w, &h);
-	float scale = (float)rw / mode.w;
+	//float scale = (float)rw / mode.w;
     
 	//hardcode all the modes we want to be available
 	GLMDisplayMode *nativeMode = new GLMDisplayMode( rw, rh, mode.refresh_rate );
     m_modes->AddToTail( nativeMode );
 	GLMDisplayMode *unscaled = new GLMDisplayMode( mode.w, mode.h, mode.refresh_rate );
     m_modes->AddToTail( unscaled );
-	/*GLMDisplayMode *doubleunscaled = new GLMDisplayMode( mode.w * 2, mode.h * 2, mode.refresh_rate );
-    m_modes->AddToTail( doubleunscaled );*/
+	GLMDisplayMode *doublex = new GLMDisplayMode( mode.w * 2, mode.h * 2, mode.refresh_rate );
+    m_modes->AddToTail( doublex );
 	//for people with iPhone 69 pro max ultra 8k
 	//actually bad idea as it might default to it
-	/*GLMDisplayMode *fourtimesunscaled= new GLMDisplayMode( mode.w * scale + 1, mode.h * scale + 1, mode.refresh_rate );
-    m_modes->AddToTail( fourtimesunscaled );*/
+	/*GLMDisplayMode *fourx= new GLMDisplayMode( mode.w * scale + 1, mode.h * scale + 1, mode.refresh_rate );
+    m_modes->AddToTail( fourx );*/
 
     int displayIndex = 0;
     int modeCount = 5;

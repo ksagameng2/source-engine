@@ -28,7 +28,7 @@ def build(bld):
 	if bld.env.DEST_OS == 'darwin' and bld.env.GL and not bld.env.IOS:
 		source += ['glmrendererinfo_osx.mm']
 	if bld.env.IOS:
-		source += ['glmrendererinfo_ios.mm']
+		source += ['glmrendererinfo_ios.mm', 'objcgarbage.mm']
 
 
 	if bld.env.DEST_OS == 'win32':
@@ -55,7 +55,7 @@ def build(bld):
 	if bld.env.DEST_OS == 'darwin' and not bld.env.IOS:
 		libs += ['FOUNDATION', 'APPKIT', 'IOKIT']
 	elif bld.env.IOS:
-		libs += ['FOUNDATION', 'UIKIT', 'IOKIT', 'OPENGLES']
+		libs += ['FOUNDATION', 'UIKIT', 'IOKIT', 'OPENGLES', 'COREGRAPHICS']
 
 	bld.stlib(
 		source   = source,

@@ -309,7 +309,7 @@ static bool CheckOpenGLExtension_internal(const char *ext, const int coremajor, 
 			}
 		}
 
-#elif !defined ( APPLE ) && !defined( __ANDROID__ )
+#elif !defined ( OSX ) && !defined( __ANDROID__ )
 /*
 		if (!ptr)
 		{
@@ -458,7 +458,7 @@ COpenGLEntryPoints::COpenGLEntryPoints()
 #undef GL_EXT
 #endif
 
-#ifdef OSX
+#ifdef APPLE
 	m_bHave_GL_NV_bindless_texture = false;
 	m_bHave_GL_AMD_pinned_memory = false;
 #else
@@ -482,7 +482,7 @@ COpenGLEntryPoints::COpenGLEntryPoints()
 	{
 		m_bHave_GL_AMD_pinned_memory = false;
 	}
-#endif // !OSX
+#endif // !APPLE
 
 	// Getting reports of black screens, etc. with ARB_buffer_storage and AMD drivers. This type of thing:
 	//  http://forums.steampowered.com/forums/showthread.php?t=3266806

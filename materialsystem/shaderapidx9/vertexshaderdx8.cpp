@@ -938,7 +938,7 @@ void CShaderManager::Shutdown()
 	}
 #endif
 
-#if defined (DX_TO_GL_ABSTRACTION) && !defined (ANDROID)
+#if defined (DX_TO_GL_ABSTRACTION) && !defined (ANDROID) && !defined (IOS)
 
 	if (mat_autosave_glshaders.GetInt())
 	{
@@ -3753,7 +3753,7 @@ CON_COMMAND( mat_shadercount, "display count of all shaders and reset that count
 #if defined( DX_TO_GL_ABSTRACTION )
 void	CShaderManager::DoStartupShaderPreloading()
 {
-#if ANDROID  || IOS// Too slow
+#if ANDROID || IOS// Too slow
 	return;
 #endif
 

@@ -14,7 +14,7 @@
 
 #if defined( USE_SDL )
 #undef M_PI
-#include "SDL.h"
+#include <SDL2/SDL.h>
 static void initKeymap(void);
 #endif
 
@@ -1557,5 +1557,12 @@ void CInputSystem::StartTextInput()
 {
 #ifdef USE_SDL
 	SDL_StartTextInput();
+#endif
+}
+
+void CInputSystem::EndTextInput()
+{
+#ifdef USE_SDL
+	SDL_StopTextInput();
 #endif
 }

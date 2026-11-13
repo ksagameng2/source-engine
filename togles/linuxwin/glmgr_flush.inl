@@ -270,7 +270,7 @@ FORCEINLINE void GLMContext::FlushDrawStates( uint nStartIndex, uint nEndIndex, 
 
 			GL_BATCH_PERF( m_FlushStats.m_nNumSamplingParamsChanged++ );
 
-#if defined( APPLE ) // valid for OSX only if using GL 3.3 context 
+#if defined( OSX ) || defined ( ANGLE ) // valid for OSX only if using GL 3.3 context 
 			CGLMTex *pTex = m_samplers[nSamplerIndex].m_pBoundTex;
 
 			if( pTex && !( gGL->m_bHave_GL_EXT_texture_sRGB_decode ) )
@@ -307,7 +307,7 @@ FORCEINLINE void GLMContext::FlushDrawStates( uint nStartIndex, uint nEndIndex, 
 
 				pTex->m_SamplingParams = m_samplers[nSamplerIndex].m_samp;
 
-#if defined( OSX )
+#if defined( OSX ) || defined ( ANGLE )
 				if( pTex && !( gGL->m_bHave_GL_EXT_texture_sRGB_decode ) )
 				{
 					// see if requested SRGB state differs from the known one

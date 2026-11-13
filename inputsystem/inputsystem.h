@@ -374,6 +374,7 @@ public:
 	}
 
 	virtual void StartTextInput();
+	virtual void EndTextInput();
 
 #if defined( USE_SDL )
 	void PollInputState_Platform();

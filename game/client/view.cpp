@@ -118,7 +118,7 @@ ConVar mat_viewportscale( "mat_viewportscale", "1.0", FCVAR_ARCHIVE, "Scale down
 ConVar mat_viewportupscale( "mat_viewportupscale", "1", FCVAR_ARCHIVE, "Scale the viewport back up" );
 ConVar cl_leveloverview( "cl_leveloverview", "0", FCVAR_CHEAT );
 
-#ifdef ANDROID
+#if ANDROID || IOS
 #define MAPEXTENTS_DEFAULT "12288" // small optimization
 #else
 #define MAPEXTENTS_DEFAULT "16384"

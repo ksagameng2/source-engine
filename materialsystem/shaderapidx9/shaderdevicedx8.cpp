@@ -355,7 +355,7 @@ void CShaderDeviceMgrDx8::InitAdapterInfo()
 void CShaderDeviceMgrDx8::CheckBorderColorSupport( HardwareCaps_t *pCaps, int nAdapter )
 {
 #ifdef DX_TO_GL_ABSTRACTION
-	if( true )
+	if( !IsIOS() )
 #else
 	if( IsX360() )
 #endif

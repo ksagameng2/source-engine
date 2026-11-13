@@ -7,6 +7,7 @@
 
 #include "vgui_controls/consoledialog.h"
 
+#include "tier2/tier2.h"
 #include "vgui/IInput.h"
 #include "vgui/IScheme.h"
 #include "vgui/IVGui.h"
@@ -23,6 +24,7 @@
 #include "tier1/convar_serverbounded.h"
 #include "icvar.h"
 #include "filesystem.h"
+#include <inputsystem/iinputsystem.h>
 
 #include <stdlib.h>
 
@@ -101,6 +103,7 @@ public:
 		if ( input()->GetFocus() != m_pCompletionList ) // if its not the completion window trying to steal our focus
 		{
 			PostMessage(GetParent(), new KeyValues("CloseCompletionList"));
+			g_pInputSystem->EndTextInput(); //i think this is correct
 		}
 	}
 
@@ -763,6 +766,9 @@ void CConsolePanel::OnCommand(const char *command)
 			AddToHistory( szCommand, extra );
 		}
 		m_pCompletionList->SetVisible(false);
+
+		// this should be handled in TextEntry
+		//g_pInputSystem->EndTextInput();
 	}
 	else
 	{

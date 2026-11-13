@@ -30,7 +30,7 @@
 #include "sourcevr/isourcevirtualreality.h"
 
 #if defined( USE_SDL )
-#include "SDL.h"
+#include <SDL2/SDL.h>
 #endif
 
 #include "inetchannelinfo.h"
@@ -1178,7 +1178,7 @@ void COptionsSubVideo::PrepareResolutionList()
 
 	// Clean up before filling the info again.
 	m_pMode->DeleteAllItems();
-#ifndef ANDROID
+#if !ANDROID && !IOS
 	m_pAspectRatio->SetItemEnabled(1, false);
 	m_pAspectRatio->SetItemEnabled(2, false);
 #endif
@@ -1640,7 +1640,7 @@ void COptionsSubVideo::OnTextChanged(Panel *pPanel, const char *pszText)
             OnDataChanged();
         }
     }
-#if !ANDROID
+#if !ANDROID && !IOS
 	else if (pPanel == m_pAspectRatio)
 	{
 		PrepareResolutionList();

@@ -3,7 +3,7 @@
 */
 
 /* Include the SDL main definition header */
-#include "SDL_main.h"
+#include <SDL2/SDL_main.h>
 
 #if defined(__IPHONEOS__) || defined(__TVOS__)
 

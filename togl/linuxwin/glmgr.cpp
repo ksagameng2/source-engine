@@ -645,7 +645,7 @@ void GLMContext::ForceFlushStates()
 	gGL->glBindBufferARB( GL_ELEMENT_ARRAY_BUFFER_ARB, m_nBoundGLBuffer[ kGLMIndexBuffer] );
 	gGL->glBindBufferARB( GL_ARRAY_BUFFER_ARB, m_nBoundGLBuffer[ kGLMVertexBuffer] );
 
-#ifndef APPLE
+#ifndef OSX
 	if ( gGL->m_bHave_GL_AMD_pinned_memory )
 	{
 		gGL->glBindBufferARB( GL_EXTERNAL_VIRTUAL_MEMORY_BUFFER_AMD, m_PinnedMemoryBuffers[m_nCurPinnedMemoryBuffer].GetHandle() );
@@ -2410,7 +2410,7 @@ void GLMContext::Present( CGLMTex *tex )
 	m_nTotalVSUniformCalls = 0, m_nTotalVSUniformBoneCalls = 0, m_nTotalVSUniformsSet = 0, m_nTotalVSUniformsBoneSet = 0, m_nTotalPSUniformCalls = 0, m_nTotalPSUniformsSet = 0;
 #endif
 
-#ifndef APPLE
+#ifndef OSX
 	GLMGPUTimestampManagerTick();
 #endif
 }
@@ -2492,7 +2492,7 @@ GLMContext::GLMContext( IDirect3DDevice9 *pDevice, GLMDisplayParams *params )
 
 	ClearCurAttribs();
 
-#ifndef APPLE
+#ifndef OSX
 	m_nCurPinnedMemoryBuffer = 0;
 	if ( gGL->m_bHave_GL_AMD_pinned_memory )
 	{
@@ -2503,7 +2503,7 @@ GLMContext::GLMContext( IDirect3DDevice9 *pDevice, GLMDisplayParams *params )
 
 		gGL->glBindBufferARB( GL_EXTERNAL_VIRTUAL_MEMORY_BUFFER_AMD, m_PinnedMemoryBuffers[m_nCurPinnedMemoryBuffer].GetHandle() );
 	}
-#endif // APPLE
+#endif // OSX
 
 	m_nCurPersistentBuffer = 0;
 	if ( gGL->m_bHave_GL_ARB_buffer_storage )
@@ -2850,7 +2850,7 @@ void GLMContext::Reset()
 
 GLMContext::~GLMContext	()
 {
-#ifndef APPLE
+#ifndef OSX
 	GLMGPUTimestampManagerDeinit();
 		
 	for ( uint t = 0; t < cNumPinnedMemoryBuffers; t++ )
@@ -2882,7 +2882,7 @@ GLMContext::~GLMContext	()
 			m_samplerObjectHash[i].m_samplerObject = 0;
 		}
 	}
-#endif // !APPLE
+#endif // !OSX
 
 	if (m_debugFontTex)
 	{
@@ -5252,7 +5252,7 @@ void GLMContext::DrawRangeElements(GLenum mode, GLuint start, GLuint end, GLsize
 		}
 		else
 		{
-#if defined( APPLE )
+#if defined( OSX )
             // MoeMod: TOGL IS NOT USING m_boundProgram THIS AT ALL
 #else
 			AssertOnce(!"drawing with no vertex program bound");
@@ -5265,7 +5265,7 @@ void GLMContext::DrawRangeElements(GLenum mode, GLuint start, GLuint end, GLsize
 		}
 		else
 		{
-#if defined( APPLE )
+#if defined( OSX )
             // MoeMod: TOGL IS NOT USING m_boundProgram THIS AT ALL
 #else
 			AssertOnce(!"drawing with no fragment program bound");

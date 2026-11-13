@@ -1916,10 +1916,11 @@ FORCEINLINE void GLMContext::DrawRangeElements(	GLenum mode, GLuint start, GLuin
 
 	if ( m_pBoundPair )
 	{
-		#ifndef ANGLE
+		#ifndef IOS
 		gGL->glDrawRangeElementsBaseVertex( mode, start, end, count, type, indicesActual, baseVertex );
-		#else
+		#if ANGLE
 		gGL->glDrawRangeElementsBaseVertexOES( mode, start, end, count, type, indicesActual, baseVertex );
+		#endif
 		#endif
 
 #if GLMDEBUG

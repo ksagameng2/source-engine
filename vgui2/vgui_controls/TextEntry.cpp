@@ -6,6 +6,7 @@
 //=============================================================================//
 
 
+#include "tier2/tier2.h"
 #include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -211,6 +212,8 @@ void TextEntry::OnKillFocus()
 
 	// move the cursor to the start
 //	GotoTextStart();
+
+	g_pInputSystem->EndTextInput();
 
 	PostActionSignal( new KeyValues( "TextKillFocus" ) );
 

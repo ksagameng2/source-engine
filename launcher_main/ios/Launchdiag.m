@@ -18,6 +18,7 @@
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
 #include <limits.h>
+#include <SDL2/SDL_syswm.h>
 
 @interface XashPromptAlertViewDelegate : NSObject <UIAlertViewDelegate>
 
@@ -125,6 +126,7 @@ void IOS_LaunchDialog( void )
 	strcat(exec_dir, "/extras_dir.vpk");
 	setenv("EXTRAS_VPK_PATH", exec_dir, 1);
 	setenv("VALVE_GAME_PATH", IOS_GetDocsDir(), 1);
+	setenv("ANGLE_METAL_PRINT_MSL_ENABLE=1", "1", 1);
 
 	//request microphone permissions otherwise we will crash when joining an online server
 	//[[AVAudioSession sharedInstance] requestRecordPermission:^(BOOL granted){}];
@@ -184,7 +186,7 @@ void IOS_LaunchDialog( void )
 	}
 	else
 	{
-		[args setText:@"-dev 2 -log"];
+		[args setText:@"-nouserclip"];
 	}
 
 	scroll.contentSize=CGSizeMake(250, 200);

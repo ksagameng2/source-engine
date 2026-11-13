@@ -4,7 +4,9 @@
 //
 //===========================================================================//
 
+#include <SDL2/SDL_audio.h>
 #include "audio_pch.h"
+#include "snd_device.h"
 
 #if !DEDICATED
 
@@ -19,7 +21,7 @@
 #define _STDINT_H_ 1
 #endif
 
-#include "SDL.h"
+#include <SDL2/SDL.h>
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -27,6 +29,8 @@
 extern bool snd_firsttime;
 extern bool MIX_ScaleChannelVolume( paintbuffer_t *ppaint, channel_t *pChannel, int volume[CCHANVOLUMES], int mixchans );
 extern void S_SpatializeChannel( /*int nSlot,*/ int volume[6], int master_vol, const Vector *psourceDir, float gain, float mono );
+SDL_AudioStream *conversionStream;
+//int bufferSize;
 
 // 64K is about 1/3 second at 16-bit, stereo, 44100 Hz
 // 44k: UNDONE - need to double buffers now that we're playing back at 44100?
@@ -248,6 +252,11 @@ void CAudioDeviceSDLAudio::OpenWaveOut( void )
 		SDLAUDIO_FAIL("SDL_OpenAudioDevice()");
 
 	#undef SDLAUDIO_FAIL
+	printf("Audio device info:\nFrequency: %d\nFormat: %d\nChannels: %d\nSamples: %d\n", obtained.freq, obtained.format, obtained.channels, obtained.samples);
+	conversionStream = SDL_NewAudioStream(
+    AUDIO_S16SYS, 2, 44100,        
+    obtained.format, obtained.channels, obtained.freq 
+);
 
 	// We're now ready to feed audio data to SDL!
 	AllocateOutputBuffers();
@@ -342,51 +351,42 @@ void CAudioDeviceSDLAudio::AudioCallback(Uint8 *stream, int len)
 	}
 
 	const int totalWriteable = len;
-#if defined( BINK_VIDEO ) && (defined( LINUX ) || defined( IOS ))
+#if defined( BINK_VIDEO ) && (defined( LINUX ))
 	Uint8 *stream_orig = stream;
 #endif
 	debugsdl("SDLAUDIO: writable size is %d.\n", totalWriteable);
 
 	Assert(len <= (WAV_BUFFERS * WAV_BUFFER_SIZE));
+	#if 1 //this is garbage, just do the math right
+    int conversionLen = SDL_AudioStreamAvailable(conversionStream);
+    while (conversionLen < len) {
+        const int spaceAvailable = (WAV_BUFFERS * WAV_BUFFER_SIZE) - m_readPos;
+        int writeLen = (WAV_BUFFER_SIZE < spaceAvailable) ? WAV_BUFFER_SIZE : spaceAvailable;
 
-	while (len > 0)
-	{
-		// spaceAvailable == bytes before we overrun the end of the ring buffer.
-		const int spaceAvailable = ((WAV_BUFFERS * WAV_BUFFER_SIZE) - m_readPos);
-		const int writeLen = (len < spaceAvailable) ? len : spaceAvailable;
+        SDL_AudioStreamPut(conversionStream, m_pBuffer + m_readPos, writeLen);
 
-		if (writeLen > 0)
-		{
-			const uint8_t *buf = m_pBuffer + m_readPos;
-			debugsdl("SDLAUDIO: Writing %d bytes...\n", writeLen);
+		m_partialWrite += writeLen;
+		m_buffersSent += m_partialWrite / WAV_BUFFER_SIZE;
+		m_partialWrite %= WAV_BUFFER_SIZE;
 
-			#if 0
-			static FILE *io = NULL;
-			if (io == NULL) io = fopen("dumpplayback.raw", "wb");
-			if (io != NULL) { fwrite(buf, writeLen, 1, io); fflush(io); }
-			#endif
+        m_readPos = (m_readPos + writeLen) % (WAV_BUFFERS * WAV_BUFFER_SIZE);
 
-			memcpy(stream, buf, writeLen);
-			stream += writeLen;
-			len -= writeLen;
-			Assert(len >= 0);
-		}
+        conversionLen = SDL_AudioStreamAvailable(conversionStream);
+    }
+	#endif
+	int received = SDL_AudioStreamGet(conversionStream, stream, len);
+	
+	if (received < len) {
+        SDL_memset(stream + received, 0, len - received);
+    }
 
-		m_readPos = len ? 0 : (m_readPos + writeLen);  // if still bytes to write to stream, we're rolling around the ring buffer.
-	}
-
-#if defined( BINK_VIDEO ) && (defined( LINUX ) || defined( IOS ))
+#if defined( BINK_VIDEO ) && (defined( LINUX ))
 	// Mix in Bink movie audio if that stuff is playing.
 	if ( g_pVideo != NULL) 
 	{
 		g_pVideo->SoundDeviceCommand( VideoSoundDeviceOperation::SDLMIXER_CALLBACK, (void *)stream_orig, (void *)&totalWriteable );
 	}
 #endif
-
-	// Translate between bytes written and buffers written.
-	m_partialWrite += totalWriteable;
-	m_buffersSent += m_partialWrite / WAV_BUFFER_SIZE;
-	m_partialWrite %= WAV_BUFFER_SIZE;
 }
 
 

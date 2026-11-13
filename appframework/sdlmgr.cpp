@@ -53,6 +53,8 @@ ConVar rawinput_set_one_time( "rawinput_set_one_time", "0", FCVAR_ARCHIVE|FCVAR_
 #if ANGLE
 #define SDL_GL_SwapWindow(x) eglSwapBuffers(native_display, surface)
 #define SDL_GL_SetSwapInterval(x) eglSwapInterval(native_display, x)
+void setPixelFormat(void *layerPtr);
+void printPixelFormat(void *layerPtr);
 #endif
 
 ConVar gl_blit_halfx( "gl_blit_halfx", "0" );
@@ -93,6 +95,7 @@ t_eglQueryString _eglQueryString;
 #endif
 #if ANGLE
 EGLint numConfigs;
+void *renderLayer;
 EGLConfig config;
 EGLDisplay native_display;
 #endif
@@ -907,22 +910,29 @@ bool CSDLMgr::CreateHiddenGameWindow( const char *pTitle, int width, int height 
 
 	SDL_GL_MakeCurrent(m_Window, m_GLContext);
 	#else
+	SDL_MetalView metalView = SDL_Metal_CreateView(m_Window);
+    renderLayer = SDL_Metal_GetLayer(metalView); 
 	EGLAttrib egl_display_attribs[] = {
         EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_METAL_ANGLE,
         EGL_POWER_PREFERENCE_ANGLE, EGL_HIGH_POWER_ANGLE,
         EGL_NONE
     };
 
+	setPixelFormat(renderLayer);
+
 	native_display = eglGetPlatformDisplay(EGL_PLATFORM_ANGLE_ANGLE, (void*) EGL_DEFAULT_DISPLAY, egl_display_attribs);
 	if (native_display == EGL_NO_DISPLAY)
     {
-        printf("Failed to get EGL display\n");
+        Error("Failed to get EGL display: %d\n", eglGetError());
     }
 
 	if (eglInitialize(native_display, NULL, NULL) == false)
     {
-        printf("Failed to initialize EGL\n");
+        Error("Failed to initialize EGL: %d\n", eglGetError());
     }
+
+	const char* extensions = eglQueryString(native_display, EGL_EXTENSIONS);
+	printf("%s", extensions);
 
 	EGLint attribs[] = {
     EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT,
@@ -930,6 +940,7 @@ bool CSDLMgr::CreateHiddenGameWindow( const char *pTitle, int width, int height 
     EGL_BLUE_SIZE, 8,
     EGL_GREEN_SIZE, 8,
     EGL_RED_SIZE, 8,
+	EGL_ALPHA_SIZE, 8,
 	EGL_DEPTH_SIZE, 24,
 	EGL_STENCIL_SIZE, 8,
     EGL_NONE
@@ -946,30 +957,36 @@ bool CSDLMgr::CreateHiddenGameWindow( const char *pTitle, int width, int height 
 
 	if (!eglChooseConfig(native_display, attribs, &config, 1, &numConfigs))
 	{
-		printf("Failed to choose EGL config\n");
+		Error("Failed to choose EGL config: %d\n", eglGetError());
 	}
 
 	m_GLContext = eglCreateContext(native_display, config, EGL_NO_CONTEXT, contextAttributes);
 
 	if (m_GLContext == EGL_NO_CONTEXT) {
-        printf("Failed to create EGL context\n");
+        Error("Failed to create EGL context: %d\n", eglGetError());
     }
 
-	//void* renderLayer = IOS_GetCALayerPointer( &info );
-	SDL_MetalView metalView = SDL_Metal_CreateView(m_Window);
-    void *renderLayer = SDL_Metal_GetLayer(metalView); 
 
-	EGLint surface_attributes[] = {
-    EGL_RENDER_BUFFER, EGL_BACK_BUFFER, 
+	EGLAttrib surface_attributes[] = {
+    EGL_RENDER_BUFFER, EGL_BACK_BUFFER,
+	EGL_GL_COLORSPACE, EGL_COLORSPACE_sRGB,
     EGL_NONE
 	};
 
-	surface = eglCreateWindowSurface(native_display, config, (EGLNativeWindowType)renderLayer, surface_attributes);
+	surface = eglCreatePlatformWindowSurface(native_display, config, (EGLNativeWindowType)renderLayer, surface_attributes);
+
+	if (surface == EGL_NO_SURFACE)
+	{
+		Error("Failed to create an EGL surface: %d\n", eglGetError());
+	}
 
 	if (!eglMakeCurrent(native_display, surface, surface, m_GLContext))
     {
-        printf("Failed to make EGL context current\n");
+        Error("Failed to make EGL context current: %d\n", eglGetError());
     }
+
+	printPixelFormat(renderLayer);
+	setPixelFormat(renderLayer);
 #endif
 
 #if (defined ANDROID || defined IOS) && !defined TOGLES
@@ -1006,6 +1023,9 @@ bool CSDLMgr::CreateHiddenGameWindow( const char *pTitle, int width, int height 
 	gGL = GetOpenGLEntryPoints(VoidFnPtrLookup_GlMgr);
 
 	#if defined( IOS ) && !defined( ANGLE )
+	//reasoning for this: system opengl framework on ios doesn't use 0 as system fbo for whatever reason
+	//instead it uses a random number, so after intiliazing opengl we capture the current framebuffer
+	//and store it for when we need to bind to the system framebuffer
 		if ( gGL->m_nSystemFramebufferID == 0 )
 		{
 			GLint currentFBO = 0;
@@ -1015,6 +1035,18 @@ bool CSDLMgr::CreateHiddenGameWindow( const char *pTitle, int width, int height 
 	#endif
 	// It is now safe to call any base GL entry point that's supplied by gGL.
 	// You still need to explicitly test for extension entry points, though!
+
+
+	GLint encoding;
+	// Check the "0" (default) framebuffer's color encoding
+	gGL->glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_BACK, GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING, &encoding);
+
+	if (encoding == GL_SRGB) {
+    DebugPrintf("encoding = GL_SRGB");
+} else {
+    DebugPrintf("encoding = %d (not GL_SRGB)", encoding);
+}
+
 
 	if ( CommandLine()->FindParm( "-gl_dump_strings" ) )
 	{
@@ -2336,7 +2368,7 @@ void CSDLMgr::SetGammaRamp( const uint16 *pRed, const uint16 *pGreen, const uint
 		
 		if ( nResult != 0 )
 		{
-			ConMsg( "SDL_SetWindowGammaRamp failed: %d\n", nResult );
+			ConMsg( "SDL_SetWindowGammaRamp failed: %d, With error: %s\n", nResult, SDL_GetError() );
 		}
 	}
 }
@@ -2411,7 +2443,7 @@ GLMDisplayDB *CSDLMgr::GetDisplayDB( void )
 
 			// m_leopard = (info.m_osComboVersion < 0x000A0600);
 
-			//m_force_vsync = info.m_badDriver1064NV;		// just force it if it's the bum NV driver
+			m_force_vsync = info.m_badDriver1064NV;		// just force it if it's the bum NV driver
 		}
 #endif
 	}

@@ -15,7 +15,7 @@
 #include "tier0/threadtools.h"
 
 #include <assert.h>
-#include <SDL_audio.h>
+#include <SDL2/SDL_audio.h>
 
 #define RECORDING_BUFFER_SECONDS 3
 #define SAMPLE_COUNT 2048

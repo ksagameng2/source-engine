@@ -88,7 +88,7 @@ using namespace vgui;
 #include "steam/steam_api.h"
 
 #if ANDROID || IOS
-#include <SDL_misc.h>
+#include <SDL2/SDL_misc.h>
 #endif
 
 #undef MessageBox	// Windows helpfully #define's this to MessageBoxA, we're using vgui::MessageBox

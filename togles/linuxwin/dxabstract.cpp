@@ -128,7 +128,7 @@ D3DMATRIX::operator void* ()
 
 // ------------------------------------------------------------------------------------------------------------------------------ //
 
-#ifdef OSX
+#ifdef APPLE
 
 #pragma mark ----- D3DXMATRIX operators
 
@@ -165,7 +165,7 @@ bool D3DXMATRIX::operator != ( CONST D3DXMATRIX& src ) const
 
 // ------------------------------------------------------------------------------------------------------------------------------ //
 
-#ifdef OSX
+#ifdef APPLE
 
 #pragma mark ----- D3DXPLANE operators
 
@@ -198,7 +198,7 @@ D3DXPLANE::operator const float*() const
 
 // ------------------------------------------------------------------------------------------------------------------------------ //
 
-#ifdef OSX
+#ifdef APPLE
 
 #pragma mark ----- D3DXVECTOR2 operators
 
@@ -216,7 +216,7 @@ D3DXVECTOR2::operator CONST FLOAT* () const
 
 // ------------------------------------------------------------------------------------------------------------------------------ //
 
-#ifdef OSX
+#ifdef APPLE
 
 #pragma mark ----- D3DXVECTOR3 operators
 
@@ -241,7 +241,7 @@ D3DXVECTOR3::operator CONST FLOAT* () const
 
 // ------------------------------------------------------------------------------------------------------------------------------ //
 
-#ifdef OSX
+#ifdef APPLE
 
 #pragma mark ----- D3DXVECTOR4 operators
 
@@ -267,7 +267,7 @@ DWORD IDirect3DResource9::SetPriority(DWORD PriorityNew)
 
 // ------------------------------------------------------------------------------------------------------------------------------ //
 
-#ifdef OSX
+#ifdef APPLE
 
 #pragma mark ----- IDirect3DBaseTexture9
 
@@ -348,7 +348,7 @@ HRESULT IDirect3DBaseTexture9::GetLevelDesc(UINT Level,D3DSURFACE_DESC *pDesc)
 
 // ------------------------------------------------------------------------------------------------------------------------------ //
 
-#ifdef OSX
+#ifdef APPLE
 
 #pragma mark ----- IDirect3DTexture9
 
@@ -553,7 +553,7 @@ HRESULT IDirect3DTexture9::GetSurfaceLevel(UINT Level,IDirect3DSurface9** ppSurf
 
 // ------------------------------------------------------------------------------------------------------------------------------ //
 
-#ifdef OSX
+#ifdef APPLE
 
 #pragma mark ----- IDirect3DCubeTexture9
 
@@ -749,7 +749,7 @@ HRESULT IDirect3DCubeTexture9::GetLevelDesc(UINT Level,D3DSURFACE_DESC *pDesc)
 
 // ------------------------------------------------------------------------------------------------------------------------------ //
 
-#ifdef OSX
+#ifdef APPLE
 
 #pragma mark ----- IDirect3DVolumeTexture9
 
@@ -965,7 +965,7 @@ HRESULT IDirect3DVolumeTexture9::GetLevelDesc( UINT Level, D3DVOLUME_DESC *pDesc
 
 // ------------------------------------------------------------------------------------------------------------------------------ //
 
-#ifdef OSX
+#ifdef APPLE
 
 #pragma mark ----- IDirect3DSurface9
 
@@ -1083,7 +1083,7 @@ HRESULT IDirect3DSurface9::GetDesc(D3DSURFACE_DESC *pDesc)
 // ------------------------------------------------------------------------------------------------------------------------------ //
 
 
-#ifdef OSX
+#ifdef APPLE
 
 #pragma mark ----- IDirect3D9 -------------------------------------------------------
 
@@ -1809,7 +1809,7 @@ HRESULT IDirect3D9::CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,VD3DHWND hFo
 
 // ------------------------------------------------------------------------------------------------------------------------------ //
 
-#ifdef OSX
+#ifdef APPLE
 
 #pragma mark ----- IDirect3DQuery9
 
@@ -2013,7 +2013,7 @@ HRESULT IDirect3DQuery9::GetData(void* pData,DWORD dwSize,DWORD dwGetDataFlags)
 
 // ------------------------------------------------------------------------------------------------------------------------------ //
 
-#ifdef OSX
+#ifdef APPLE
 
 #pragma mark ----- IDirect3DVertexBuffer9
 
@@ -2124,7 +2124,7 @@ void IDirect3DVertexBuffer9::UnlockActualSize( uint nActualSize, const void *pAc
 // ------------------------------------------------------------------------------------------------------------------------------ //
 
 
-#ifdef OSX
+#ifdef APPLE
 
 #pragma mark ----- IDirect3DIndexBuffer9
 
@@ -2248,7 +2248,7 @@ HRESULT IDirect3DIndexBuffer9::GetDesc(D3DINDEXBUFFER_DESC *pDesc)
 
 // ------------------------------------------------------------------------------------------------------------------------------ //
 
-#ifdef OSX
+#ifdef APPLE
 
 #pragma mark ----- IDirect3DDevice9 -------------------------------------------------
 
@@ -2570,7 +2570,7 @@ IDirect3DDevice9::~IDirect3DDevice9()
 	m_nValidMarker = 0xDEADBEEF;
 }
 
-#ifdef OSX
+#ifdef APPLE
 
 #pragma mark ----- Basics - (IDirect3DDevice9)
 
@@ -3085,7 +3085,7 @@ HRESULT IDirect3DDevice9::Present(CONST RECT* pSourceRect,CONST RECT* pDestRect,
 	return S_OK;
 }
 
-#ifdef OSX
+#ifdef APPLE
 
 #pragma mark ----- Textures - (IDirect3DDevice9)
 #pragma mark ( create functions for each texture are now adjacent to the rest of the methods for each texture class)
@@ -3102,7 +3102,7 @@ HRESULT IDirect3DDevice9::GetTexture(DWORD Stage,IDirect3DBaseTexture9** ppTextu
 }
 
 
-#ifdef OSX
+#ifdef APPLE
 
 #pragma mark ----- RTs and Surfaces - (IDirect3DDevice9)
 
@@ -3844,7 +3844,7 @@ static int ShadowDepthSamplerMaskFromName( const char *pName )
 	return 0;
 }
 
-#ifdef OSX
+#ifdef APPLE
 
 #pragma mark ----- Pixel Shaders - (IDirect3DDevice9)
 
@@ -4133,7 +4133,7 @@ HRESULT IDirect3DDevice9::SetPixelShaderConstantI(UINT StartRegister,CONST int* 
 }
 
 
-#ifdef OSX
+#ifdef APPLE
 
 #pragma mark ----- Vertex Shaders - (IDirect3DDevice9)
 
@@ -4367,7 +4367,7 @@ HRESULT IDirect3DDevice9::SetVertexShaderConstantINonInline(UINT StartRegister,C
 	return S_OK;
 }
 
-#ifdef OSX
+#ifdef APPLE
 
 #pragma mark ----- Shader Pairs - (IDirect3DDevice9)
 
@@ -4409,7 +4409,7 @@ HRESULT IDirect3DDevice9::QueryShaderPair( int index, GLMShaderPairInfo *infoOut
 }
 
 
-#ifdef OSX
+#ifdef APPLE
 
 #pragma mark ----- Vertex Buffers and Vertex Declarations - (IDirect3DDevice9)
 
@@ -4613,7 +4613,7 @@ HRESULT IDirect3DDevice9::GetFVF(DWORD* pFVF)
 }
 
 
-#ifdef OSX
+#ifdef APPLE
 
 #pragma mark ----- Vertex Buffers and Streams - (IDirect3DDevice9)
 
@@ -4655,7 +4655,7 @@ HRESULT IDirect3DDevice9::SetStreamSourceNonInline(UINT StreamNumber,IDirect3DVe
 	return S_OK;
 }
 
-#ifdef OSX
+#ifdef APPLE
 
 #pragma mark ----- Index Buffers - (IDirect3DDevice9)
 #pragma mark ----- Creatue function relocated to be adjacent to the rest of the index buffer methods
@@ -4673,7 +4673,7 @@ HRESULT IDirect3DDevice9::SetIndicesNonInline(IDirect3DIndexBuffer9* pIndexData)
 }
 
 
-#ifdef OSX
+#ifdef APPLE
 
 #pragma mark ----- Release Handlers - (IDirect3DDevice9)
 
@@ -4818,7 +4818,7 @@ void IDirect3DDevice9::ReleasedQuery( IDirect3DQuery9 *query )
 	m_ObjectStats.m_nTotalQueries--;
 }
 
-#ifdef OSX
+#ifdef APPLE
 
 #pragma mark ----- Queries - (IDirect3DDevice9)
 
@@ -4913,7 +4913,7 @@ IDirect3DQuery9::~IDirect3DQuery9()
 	GLMPRINTF(("<-A- ~IDirect3DQuery9"));
 }
 
-#ifdef OSX
+#ifdef APPLE
 
 #pragma mark ----- Render States - (IDirect3DDevice9)
 
@@ -5099,7 +5099,7 @@ void	UnpackD3DRSITable( void )
 
 // convenience functions
 
-#ifdef OSX
+#ifdef APPLE
 
 #pragma mark ----- Sampler States - (IDirect3DDevice9)
 
@@ -5391,7 +5391,7 @@ HRESULT IDirect3DDevice9::DrawIndexedPrimitive( D3DPRIMITIVETYPE Type, INT BaseV
 				Assert( p.m_nType );
 				Assert( NumVertices >= 1 );
 
-				m_ctx->DrawRangeElements( p.m_nType, (GLuint)MinVertexIndex, (GLuint)( MinVertexIndex + NumVertices - 1 ), (GLsizei)p.m_nPrimAdd + primCount * p.m_nPrimMul, (GLenum)GL_UNSIGNED_SHORT, (const GLvoid *)( startIndex * sizeof(short) ), BaseVertexIndex, m_indices.m_idxBuffer->m_idxBuffer );
+				m_ctx->DrawRangeElementsNonInline( p.m_nType, (GLuint)MinVertexIndex, (GLuint)( MinVertexIndex + NumVertices - 1 ), (GLsizei)p.m_nPrimAdd + primCount * p.m_nPrimMul, (GLenum)GL_UNSIGNED_SHORT, (const GLvoid *)( startIndex * sizeof(short) ), BaseVertexIndex, m_indices.m_idxBuffer->m_idxBuffer );
 			}
 		}
 	}

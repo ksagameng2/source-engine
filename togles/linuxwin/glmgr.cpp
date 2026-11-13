@@ -5003,10 +5003,55 @@ void GLMContext::DrawRangeElementsNonInline( GLenum mode, GLuint start, GLuint e
 
 	if ( m_pBoundPair )
 	{
-		#ifndef ANGLE
-		gGL->glDrawRangeElementsBaseVertex( mode, start, end, count, type, indicesActual, baseVertex );
+		#if IOS && !defined (ANGLE)
+		if ( baseVertex == 0 )
+		{
+			gGL->glDrawRangeElements( mode, start, end, count, type, indicesActual );
+		}
+		else
+		{
+
+			unsigned char *pVertexShaderAttribMap = m_pDevice->m_vertexShader->m_vtxAttribMap;
+			const int nMaxVertexAttributesToCheck = m_drawingProgram[ kGLMVertexProgram ]->m_maxVertexAttrs;
+
+			IDirect3DVertexDeclaration9 *pVertDecl = m_pDevice->m_pVertDecl;
+			const uint8 *pVertexAttribDescToStreamIndex = pVertDecl->m_VertexAttribDescToStreamIndex;
+
+			for ( int nIndex = 0; nIndex < nMaxVertexAttributesToCheck; ++nIndex )
+			{
+				uint8 vertexShaderAttrib = pVertexShaderAttribMap[ nIndex ];
+
+				uint nDeclIndex = pVertexAttribDescToStreamIndex[ vertexShaderAttrib ];
+				if ( nDeclIndex == 0xFF )
+					continue;
+
+				D3DVERTEXELEMENT9_GL *pDeclElem = &pVertDecl->m_elements[ nDeclIndex ];
+				const uint nStreamIndex = pDeclElem->m_dxdecl.Stream;
+				const D3DStreamDesc *pStream = &m_pDevice->m_streams[ nStreamIndex ];
+
+				CGLMBuffer *pBuf = m_pDevice->m_vtx_buffers[ nStreamIndex ];
+				if ( pBuf == m_pDevice->m_pDummy_vtx_buffer )
+					continue; 
+
+				int nBufOffset = pDeclElem->m_gldecl.m_offset + pStream->m_offset;
+				nBufOffset += (int)baseVertex * (int)pStream->m_stride;
+
+				if ( pBuf->m_bUsingPersistentBuffer )
+				{
+					nBufOffset += pBuf->m_nPersistentBufferStartOffset;
+				}
+
+				SetBufAndVertexAttribPointer( nIndex, pBuf->GetHandle(),
+					pStream->m_stride, pDeclElem->m_gldecl.m_datatype, pDeclElem->m_gldecl.m_normalized, pDeclElem->m_gldecl.m_nCompCount,
+					reinterpret_cast< const GLvoid * >( reinterpret_cast< intp >( pBuf->m_pPseudoBuf ) + nBufOffset ),
+					pBuf->m_nRevision );
+
+			}
+
+			gGL->glDrawRangeElements( mode, start, end, count, type, indicesActual );
+		}
 		#else
-		gGL->glDrawRangeElementsBaseVertexOES( mode, start, end, count, type, indicesActual, baseVertex );
+			gGL->glDrawRangeElementsBaseVertex( mode, start, end, count, type, indicesActual, baseVertex );
 		#endif
 
 #if GLMDEBUG

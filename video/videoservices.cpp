@@ -30,7 +30,7 @@
 #endif
 
 #if defined( USE_SDL )
-	#include "SDL.h"
+	#include <SDL2/SDL.h>
 	#include "appframework/ilaunchermgr.h"
 #endif
 

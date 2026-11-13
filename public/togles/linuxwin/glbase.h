@@ -38,7 +38,7 @@
 #endif
 
 #ifdef USE_SDL
-#include "SDL_opengl.h"
+#include <SDL2/SDL_opengl.h>
 #endif
 
 #ifdef OSX
@@ -53,7 +53,7 @@
 	#undef CurrentTime
 
 	#if defined( USE_SDL )
-		#include "SDL.h"
+		#include <SDL2/SDL.h>
 	#endif
 #endif
 
